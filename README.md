@@ -91,6 +91,8 @@ Local speech synthesis was integrated into the Telegram conversation workflow. G
 
 The end-to-end flow was tested in a real conversation: the assistant generated and successfully sent voice messages.
 
+See [Local Voice Interface](docs/voice.md) for the voice requirements, evaluation, and limitations.
+
 The project also includes work with speech-to-text and visual AI capabilities. Their current configurations require separate verification before performance results can be reported.
 
 ## Reliability Case: Context Overflow
