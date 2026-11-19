@@ -38,11 +38,17 @@ Testing covered:
 - Responding to direct instructions, emotional messages, and requests to take initiative.
 - Choosing between responding, consulting memory, and using tools.
 - Applying retrieved information without losing track of the conversation.
-- Comparing modes with additional model reasoning enabled and disabled.
+- Comparing four levels of additional model reasoning in a reproducible sandbox (see below).
 
 The model could maintain the intended style and use tools, but quality depended on context, settings, and instruction wording. Some replies were overly brief or repeated similar phrasing. Work on naturalness and behavioral consistency continues.
 
 Here, **decision-making** means selecting a response or an available action based on the context and instructions provided to the model.
+
+### Finding: example lines get copied
+
+Comparing transcripts with the character instructions showed that the local model often reproduced the example lines from the instructions almost word for word, instead of treating them as an illustration of style. Responses to similar situations therefore followed one fixed pattern.
+
+A revised approach describes the character's conversational *moves* rather than ready-made lines, and marks every example as "the move, not the words". It is being evaluated in the sandbox against the current version; no results are reported yet.
 
 ## Memory of Conversation Partners
 
@@ -85,6 +91,27 @@ In one synthetic test, the model processed approximately **60,000 input tokens**
 
 See [LLM deployment and evaluation](docs/llm.md) for the test configuration and limitations.
 
+## Reproducible Sandbox and Reasoning-Effort Evaluation
+
+To compare settings without touching real conversations, I used a sandbox. It runs the assistant's real turn loop against the local model, but with a simulated chat, synthetic scenarios and empty memory. Nothing goes to Telegram, and every request is measured.
+
+- **Baseline noise:** three identical runs took 401, 415 and 488 s. The spread came from the model choosing a different number of requests per turn, not from the server.
+- **Memory save:** saving a conversation to memory dropped from 119 s to an average of 66 s after a duplicated generation step was removed.
+- **Reasoning effort:** the same 16 turns were run with reasoning off, low, medium and extra-high. Quality was scored blind by two LLM judges from a different model family, and I calibrated their scores against my own picks.
+
+| Reasoning | Average turn | Judges' combined score (max 280) |
+| --- | --- | --- |
+| Off | 38 s | 195 |
+| Low | 64 s | 209 |
+| Medium | 80 s | 220 |
+| Extra-high | 153 s | 214 |
+
+The biggest quality gain came from the first step, off to low: fewer invented memories and fewer unnecessary tool calls. Extra-high cost four times the latency and did not score best. **Low** was chosen as the default.
+
+These are single runs per level on a small scenario set. The judges agreed with my own picks in 3 and 2 of 5 calibration pairs, so on character questions human judgment stays decisive.
+
+See [Sandbox evaluation](docs/evaluation.md) for the method and the full results.
+
 ## Voice and Multimodality
 
 Local speech synthesis was integrated into the Telegram conversation workflow. Generated speech was converted into a format suitable for Telegram voice messages.
@@ -106,7 +133,17 @@ The investigation led to changes that:
 - Avoid clearing temporary context when a memory summary is empty or truncated.
 - Limit retries and preserve information for recovery.
 
-After the changes, **14 application-component tests passed**, including a regression test for repeated empty responses.
+## Reliability Case: Memory That Survives Failures
+
+A code review of the memory pipeline found several ways to lose or corrupt saved context. The fixes:
+
+- **Shutdown:** an interrupt or termination signal now stops taking new events, lets the current step finish without sending new messages, saves memory for every open conversation, and only then exits. This was checked on the running system.
+- **Oversized requests:** the request size is estimated before it is sent. Previously, one oversized request could block a conversation permanently, even across restarts. Now an overflow triggers a memory save instead.
+- **No duplicates after a crash:** memory saving keeps a journal and resumes from where it stopped instead of writing the same summary twice.
+- **Cleaner summaries:** the model's internal reasoning and previously retrieved memory pages are no longer summarized again as if they were new events.
+- **Atomic writes:** a corrupted snapshot no longer blocks a conversation, and each turn is capped at a fixed number of model requests.
+
+The application now has **272 automated unit tests**. Integration tests that need live services are run separately.
 
 ## Observations and Limitations
 
@@ -114,7 +151,7 @@ During the combined long-context and speech-synthesis test, sampled GPU memory u
 
 This was one test under specific conditions, not a guarantee that every workload will fit. The remaining VRAM headroom was small, so longer voice messages, other GPU applications, or different workloads may require further adjustments.
 
-The context-management threshold relies on token usage from the previous successful response rather than an exact preflight count before every new request.
+The size check before each request is a conservative estimate based on the amount of text sent, not an exact tokenizer count.
 
 **Access during testing:** The assistant was configured to interact with only one authorized user. Multi-chat behavior, separation of memories between people, and the full set of actions involving other users require separate testing.
 
@@ -126,10 +163,15 @@ The context-management threshold relies on token usage from the previous success
 - Logs and repeatable tests are essential when several services interact.
 - Persistent memory requires failure handling, not just a summarization prompt.
 - Consumer hardware can support complex local AI workflows, but only with careful measurement and realistic limits.
+- More reasoning is not automatically better: a small amount helped, and the maximum mostly added latency.
+- A smaller local model follows instruction examples literally, so a character should be described by its behavior rather than by sample lines.
+- A speed technique that works in benchmarks may give nothing on a given setup. Speculative decoding showed no gain while part of the model ran on the CPU.
+- An LLM judge is useful for blind, repeatable scoring, but needs calibration against a human on the questions that matter.
 
 ## Next Steps
 
-- Improve token counting before requests are sent.
-- Continue improving conversational naturalness and reliable tool selection.
+- Fit the whole model on the GPU, then re-test speculative decoding and higher reasoning effort.
+- Evaluate the behavior-based character instructions against the current version.
+- Add scheduled reminders, so that the assistant's promises to remind are backed by a real timer.
+- Reduce latency from memory searches that run on almost every turn.
 - Develop a mechanism for modeling the assistant's emotional state, influencing its conversational style and reactions according to dialogue context.
-- Build a separate reproducible tool to measure local LLM latency and GPU memory usage.

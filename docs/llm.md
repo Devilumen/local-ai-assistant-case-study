@@ -19,7 +19,7 @@ The evaluation focused on instruction following, conversational style, tool use,
 | KV cache | Q8 |
 | Model placement | 50 GPU-offloaded layers as counted by the inference engine, including the output layer; remaining layers on CPU |
 | Interface | OpenAI-compatible API |
-| Additional model reasoning | Compared in separate chat tests; disabled in the integrated run |
+| Additional model reasoning | Disabled in the long-context run; four levels later compared in the sandbox, "low" chosen (see [evaluation](evaluation.md)) |
 | Speech synthesis | Local, tested alongside the language model |
 
 The context window is the configured capacity, not a guarantee of reliable retrieval or answer quality at every position within it.
@@ -38,13 +38,23 @@ The memory figure represents a sampled observation from one test, not a guarante
 
 An earlier request exceeded the configured context size. The application repeatedly retried the rejected request and appended additional instructions, making the request larger.
 
-Changes were made to bound retries, stop on HTTP errors, trigger memory saving during a tool sequence, and preserve temporary context when summaries are empty or truncated. Fourteen application-component tests passed after the changes, including a regression test for repeated empty responses.
+Changes were made to bound retries, stop on HTTP errors, trigger memory saving during a tool sequence, and preserve temporary context when summaries are empty or truncated. Fourteen application-component tests passed after these first changes, including a regression test for repeated empty responses.
 
-The current threshold uses token usage reported by the previous successful response. It does not yet perform an exact preflight token count for every new request, and the complete automatic compaction workflow has not been validated across all long-running conversations.
+Later, a size estimate before every request was added. A request that would not fit now triggers a memory save instead of an error that blocks the conversation. The estimate counts the text sent, not exact tokens, and the full automatic compaction workflow still needs validation in long-running real conversations.
+
+## Latency
+
+Measured in the [sandbox](evaluation.md), at about 13 tokens per second generation speed:
+
+- A conversational turn takes 38 s on average with reasoning off and 64 s with low reasoning.
+- Turns that search memory first take noticeably longer: 84 s against 48 s at low reasoning. The memory search runs its own short model-driven loop.
+- Speculative decoding with a multi-token prediction head gave no gain while part of the model ran on the CPU.
+
+The main remaining lever is placing the whole model on the GPU. This needs VRAM that is currently shared with speech synthesis and the desktop.
 
 ## Future Work
 
-- Add accurate preflight token accounting.
+- Fit the whole model on the GPU, then re-test speculative decoding and higher reasoning effort.
 - Evaluate response quality and tool selection across longer conversations.
 - Explore ways to reduce memory pressure when language and speech workloads overlap.
 - Publish a separate reproducible latency and GPU-memory benchmarking tool.
