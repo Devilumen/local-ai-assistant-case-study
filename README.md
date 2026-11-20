@@ -130,6 +130,12 @@ The codebase ended up slightly smaller (120 → 108 source files) while gaining 
 
 See [Architecture cleanup and stabilization](docs/architecture.md) for the approach and the results.
 
+## Working With Two AI Agents
+
+The code is written with AI coding agents: one implements and reviews its own work, a second one from another vendor audits it independently, and I make the decisions and approve every outward action. Every finding is checked against the code before it is fixed. Over five reviews the auditor reported 56 findings: 55 were confirmed, none were false alarms. In the last two reviews it found three serious issues each that the implementer had missed, including one the implementer had explicitly marked as safe.
+
+See [Two AI agents and an owner](docs/ai-assisted-workflow.md) for the roles, the rules and the examples.
+
 ## Reliability Case: Context Overflow
 
 During testing, the assistant stopped responding when a request exceeded the model's context limit. The application repeatedly sent the rejected request while adding new instructions, causing the context to grow further.
