@@ -29,7 +29,11 @@ This was a **subjective listening-based choice**, not an objective ranking of mo
 
 A voice assistant needs more than a recognizable voice: pauses, emphasis, and intonation also affect how naturally a phrase is perceived.
 
-Russian pronunciation and stress received particular attention. During testing, stress marking was tried on difficult words and names, but its reliability has not been established. Correct pronunciation remains an area for further evaluation.
+Russian pronunciation and stress received particular attention. The speech engine has no explicit syntax for Russian stress, and names were sometimes stressed on the wrong syllable.
+
+Instead of asking the language model to place stress marks, which costs tokens and is not reliable, a **pronunciation dictionary** is applied to the text right before synthesis. It is a plain file of "word = how to pronounce it" entries. Entries can cover every grammatical form of a word, matching ignores case, and the original capitalization is kept. The file is re-read on every voice message, so it can be edited without a restart. The dictionary logic is covered by unit tests.
+
+Whether the engine actually honours the stress mark used in the dictionary still has to be confirmed by listening. If it does not, only the dictionary entries change, not the code.
 
 English speech is also a requirement for the voice interface. Its quality and consistency in following the voice reference need separate evaluation.
 
@@ -80,7 +84,8 @@ I also tested vocal reactions, helped choose the model-loading approach, and eva
 
 - Evaluate Russian and English speech across a wider range of text.
 - Assess the consistency of reference similarity and natural intonation across utterances of different lengths.
-- Test the pronunciation of names, numbers, and words with difficult stress patterns.
+- Confirm by listening that the pronunciation dictionary works, then extend it to more names, numbers, and words with difficult stress patterns.
+- Make voice-note content as characterful as text replies. In sandbox tests, voice notes drifted toward generic comforting phrases.
 - Repeat vocal-reaction tests to assess consistency.
 - Measure the delay from receiving a message to delivering a voice response over a series of requests.
 - Continue exploring how conversation context can influence vocal reactions and speaking style.
