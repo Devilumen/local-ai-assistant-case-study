@@ -122,6 +122,14 @@ See [Local Voice Interface](docs/voice.md) for the voice requirements, evaluatio
 
 The project also includes work with speech-to-text and visual AI capabilities. Their current configurations require separate verification before performance results can be reported.
 
+## Architecture Cleanup
+
+After several rounds of experiments, the codebase still carried disabled features, dead code, and one shared memory store for every conversation. I first took a full snapshot and mapped the dependencies. Then I removed three unused subsystems and about 3,600 lines of dead code, gave each conversation its own memory, and restricted tools that could cross between chats. Every finding from an independent code audit was verified before it was fixed.
+
+The codebase ended up slightly smaller (120 → 108 source files) while gaining reliability logic, a sandbox, and tests (279 → 295). In the sandbox, the same scenarios got 16% faster.
+
+See [Architecture cleanup and stabilization](docs/architecture.md) for the approach and the results.
+
 ## Reliability Case: Context Overflow
 
 During testing, the assistant stopped responding when a request exceeded the model's context limit. The application repeatedly sent the rejected request while adding new instructions, causing the context to grow further.
