@@ -2,6 +2,8 @@
 
 This document expands on the language-model deployment described in the [main case study](../README.md). It records a local experiment, not a general performance benchmark.
 
+> **Update:** this 27B setup was later replaced on the same GPU by a 125B mixture-of-experts model: replies 2.9× faster, a 128K context, and no loss in blind-judged quality. See [125B on a single 16 GB GPU](moe-on-16gb.md).
+
 ## Goal
 
 Run a quantized conversational model locally alongside speech synthesis on a consumer GPU, while retaining enough context for an assistant that uses memory and tools.

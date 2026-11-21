@@ -91,6 +91,25 @@ In one synthetic test, the model processed approximately **60,000 input tokens**
 
 See [LLM deployment and evaluation](docs/llm.md) for the test configuration and limitations.
 
+## Upgrade: a 5× Larger Model, 3× Faster Replies
+
+The 27B setup above was later replaced, on the same 16 GB GPU, by a **125B mixture-of-experts model** with only 6B parameters active per token. The engine keeps the most used experts on the GPU and the rest in system RAM.
+
+| | Before | After |
+| --- | --- | --- |
+| Model | 27B | **125B** (4.6×) |
+| Reply per turn (sandbox) | 51 s | **17.5 s** (2.9× faster) |
+| Generation | 13.8 tok/s | **45–65 tok/s** |
+| Context window | 64K | **128K** |
+| Voice message | 12–52 s | **1–3 s** |
+| Quality, blind judges | 282 / 360 | **291 / 360**, persona +14% |
+| Human pick | 1 of 5 | **4 of 5** |
+| Live stability | at the VRAM limit | **~13 h** without a memory failure |
+
+Speech synthesis still shares the same GPU. The hardest constraint turned out to be system RAM: the fastest configuration left no room for voice and pushed the system into swap, so the configuration in use trades 26% of generation speed for 2.5× faster voice.
+
+See [125B on a single 16 GB GPU](docs/moe-on-16gb.md) for the memory budget, the measurements, what did not work, and the limitations.
+
 ## Reproducible Sandbox and Reasoning-Effort Evaluation
 
 To compare settings without touching real conversations, I used a sandbox. It runs the assistant's real turn loop against the local model, but with a simulated chat, synthetic scenarios and empty memory. Nothing goes to Telegram, and every request is measured.
