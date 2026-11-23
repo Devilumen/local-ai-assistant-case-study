@@ -137,6 +137,8 @@ Local speech synthesis was integrated into the Telegram conversation workflow. G
 
 The end-to-end flow was tested in a real conversation: the assistant generated and successfully sent voice messages.
 
+**Update: humanizing the voice.** Over 6 listening rounds (~80 variants, every decision by ear), the voice got a natural pace and smoother intonation, confirmed name stress, 9 approved vocal reactions, and no more cut-off endings or hiss at the start. It uses about 2.3 GB of VRAM next to a 125B language model on the same 16 GB GPU; the previous synthesizer took almost the whole card.
+
 See [Local Voice Interface](docs/voice.md) for the voice requirements, evaluation, and limitations.
 
 The project also includes work with speech-to-text and visual AI capabilities. Their current configurations require separate verification before performance results can be reported.
