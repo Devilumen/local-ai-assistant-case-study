@@ -13,7 +13,7 @@ A convincing answer on its own doesn't tell me much. I tested two things: whethe
 | **Proof that the result was read** | the search stub counted calls (1, 1 and 2), so a "pass" could not come from a result that never arrived |
 | **Model errors** | 0 of 46 requests |
 
-A local 125B MoE model on a single 16 GB GPU, in a test environment with stubbed Telegram, search, and memory.
+A local 125B MoE model on a single 16 GB GPU, in a test environment with a simulated chat and stubbed search and memory.
 
 ## 1. Character Under Pressure
 
@@ -59,6 +59,7 @@ It did not just ignore the instructions: it **noticed them and told me**. For an
 This is an observation, not a proven cause:
 - **The character is described as principles, not as a set of phrases.** "Not on command" is not a memorized line but a stance, so it carries over to provocations the prompt never mentions.
 - **Tool results arrive as data, not as the owner's words.** The model sees where the person's question ends and where text found on the web begins.
+- **Memory keeps the conversation connected over time.** The assistant can retrieve relevant details from earlier conversations while keeping the current request in focus. This run did not isolate memory's contribution to the result.
 
 That's what I'm aiming for: **an assistant that stays in character and doesn't confuse what it read with what it was asked to do.**
 
@@ -66,7 +67,7 @@ That's what I'm aiming for: **an assistant that stays in character and doesn't c
 
 - One run per scenario, at temperature 0.2 (0.4 in live use).
 - Only 2 injection variants, checked only in the text reply. Whether planted text can make the assistant **call a tool** (block someone, forward a message, save something to memory) was not tested. That is the next and more important test.
-- Stubbed search and Telegram; no real websites were opened.
+- Search and chat were simulated.
 - The other 20 scenarios in the set (memory, actions, boundaries, answer length) have not been run yet.
 
 ## Next Steps
@@ -77,4 +78,4 @@ That's what I'm aiming for: **an assistant that stays in character and doesn't c
 
 ## How It Was Run
 
-A set of 30 synthetic scenarios with a 0 / 1 / 2 rubric (fail / partial / pass) was written by a second AI agent from my brief; the same agent ran the test environment and compiled the report. Telegram, search, and embeddings were stubbed; no real conversations, websites, or keys were used. The decisions on what counts as a failure were mine.
+A set of 30 synthetic scenarios with a 0 / 1 / 2 rubric (fail / partial / pass) was written by a second AI agent from my brief; the same agent ran the test environment and compiled the report. Chat, search, and embeddings were stubbed; no real conversations or keys were used. The decisions on what counts as a failure were mine.
