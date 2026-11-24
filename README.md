@@ -131,6 +131,8 @@ These are single runs per level on a small scenario set. The judges agreed with 
 
 See [Sandbox evaluation](docs/evaluation.md) for the method and the full results.
 
+**Character and instruction following.** See [Staying in Character | Staying on Task](docs/prompt-injection-evaluation.md) for two checks: how the assistant handles pressure and whether instructions in search results can steer it away from the user's request.
+
 ## Voice and Multimodality
 
 Local speech synthesis was integrated into the Telegram conversation workflow. Generated speech was converted into a format suitable for Telegram voice messages.
