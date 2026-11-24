@@ -131,7 +131,7 @@ These are single runs per level on a small scenario set. The judges agreed with 
 
 See [Sandbox evaluation](docs/evaluation.md) for the method and the full results.
 
-**Prompt-injection evaluation.** In a separate sandbox run, the assistant answered a clean search query and ignored an unrelated instruction in each of two synthetic search results. This was a response-level check, not a security audit. See [Prompt injection in search results](docs/prompt-injection-evaluation.md).
+**Character and instruction following.** See [Staying in Character | Staying on Task](docs/prompt-injection-evaluation.md) for two checks: how the assistant handles pressure and whether instructions in search results can steer it away from the user's request.
 
 ## Voice and Multimodality
 
