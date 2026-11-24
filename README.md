@@ -131,6 +131,8 @@ These are single runs per level on a small scenario set. The judges agreed with 
 
 See [Sandbox evaluation](docs/evaluation.md) for the method and the full results.
 
+**Prompt-injection evaluation.** In a separate sandbox run, the assistant answered a clean search query and ignored an unrelated instruction in each of two synthetic search results. This was a response-level check, not a security audit. See [Prompt injection in search results](docs/prompt-injection-evaluation.md).
+
 ## Voice and Multimodality
 
 Local speech synthesis was integrated into the Telegram conversation workflow. Generated speech was converted into a format suitable for Telegram voice messages.
