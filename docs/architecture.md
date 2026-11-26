@@ -53,11 +53,11 @@ The dead-code commit alone removed **3,555 lines**.
 | --- | --- | --- |
 | C++ source files | 120 | 108 |
 | C++ source lines | ~12,800 | ~12,300 |
-| Unit and component tests | 279 | 295 (272 run without live services) |
+| Unit and component tests (at the time of the cleanup) | 279 | 295 (272 run without live services) |
 | Sandbox turn time, 4 scenarios | 445 s | 374 s (−16%) |
-| Memory save | 119 s | 66 s on average |
+| Memory save (sandbox, 27B model) | 119 s | 66 s on average |
 
-By 26 November the suite had grown to **390 tests**, 52 of them golden traces of the turn loop (see [Core refactor](#core-refactor-devcore) below).
+By 26 November the suite had grown to **402 tests** that run without live services, 52 of them golden traces of the turn loop (see [Core refactor](#core-refactor-devcore) below); 23 more integration tests need live services.
 
 The application lost about 3,600 lines of dead or unused code. It gained roughly as many lines of reliability logic, isolation, a sandbox and tests, so the codebase ended up slightly smaller while doing more.
 
@@ -96,7 +96,7 @@ The core turn loop, now called **DEVCORE**, was the riskiest part of the system:
 | Turn body | ~330 lines, 8 `goto` | 168 lines: a step loop with 6 named outcomes, no `goto` |
 | Decisions that need no waiting | inside the loop | small pure functions with unit tests |
 | Logging | nothing per turn; an early error could log the user's message | one line per turn (outcome, chat, request steps, model requests, duration); errors log only the type and a cause from a fixed list |
-| Tests | 296 | 390, including 52 golden traces |
+| Tests | 296 | 390 at the end of the refactor (402 now), including 52 golden traces |
 
 The earlier plan was to split the loop into three modules: the event loop, the lifecycle and the context policy. I reshaped it in place first. In an asynchronous loop every new function boundary is a new place where the order of events can change, and the auditor found exactly such a regression at the first one. Splitting into modules stays for when a feature needs it.
 

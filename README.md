@@ -118,7 +118,7 @@ See [125B on a single 16 GB GPU](docs/moe-on-16gb.md) for the memory budget, the
 To compare settings without touching real conversations, I used a sandbox. It runs the assistant's real turn loop against the local model, but with a simulated chat, synthetic scenarios and empty memory. Nothing goes to Telegram, and every request is measured.
 
 - **Baseline noise:** three identical runs took 401, 415 and 488 s. The spread came from the model choosing a different number of requests per turn, not from the server.
-- **Memory save:** saving a conversation to memory dropped from 119 s to an average of 66 s after a duplicated generation step was removed.
+- **Memory save (sandbox, 27B model):** saving a conversation to memory dropped from 119 s to an average of 66 s after a duplicated generation step was removed. In live use with a full context, the save took up to 7.7 min with the 27B model and about 2 min after the move to the 125B model.
 - **Reasoning effort:** the same 16 turns were run with reasoning off, low, medium and extra-high. Quality was scored blind by two LLM judges from a different model family, and I calibrated their scores against my own picks.
 
 | Reasoning | Average turn | Judges' combined score (max 280) |
@@ -146,13 +146,21 @@ The end-to-end flow was tested in a real conversation: the assistant generated a
 
 See [Local Voice Interface](docs/voice.md) for the voice requirements, evaluation, and limitations.
 
-Speech recognition and image understanding are part of everyday use. Voice notes were transcribed correctly in live conversations, and the assistant answers questions about photos and screenshots with the caption and the conversation in mind. Image descriptions run on the CPU next to the language model and are cached per chat. Their latency and accuracy have not been benchmarked separately, so no numbers are reported for them.
+Speech recognition and image understanding are part of everyday use. Voice notes were transcribed correctly in live conversations, and the assistant answers questions about photos and screenshots with the caption and the conversation in mind. Image descriptions run on the CPU next to the language model and are cached per chat. Measured on 26 November 2026, on the same machine, next to the 125B model:
+
+| | Latency | GPU memory |
+| --- | --- | --- |
+| Speech recognition, 14 s Russian voice note | **6.3 s** (9.8 s on the first call) | none: runs on the CPU |
+| Image question, photo | **2.7 s** | +33 MB: the vision encoder runs on the CPU (~1 GB of RAM) |
+| Image question, screenshot | **3.7 s** (up to 5 s on the first call) | same |
+
+Two synthetic examples (no private data): for a close-up photo of a cat it answered "a close-up of a cat's face with a long pink tongue sticking out"; for a flight-status screenshot asked "when is the departure now and from which gate?" it answered "19:55, gate B7", which is correct. Three runs each, reasoning off as in the assistant's image descriptions. Accuracy was not measured on a larger set.
 
 ## Architecture Cleanup
 
 After several rounds of experiments, the codebase still carried disabled features, dead code, and one shared memory store for every conversation. I first took a full snapshot and mapped the dependencies. Then I removed three unused subsystems and about 3,600 lines of dead code, gave each conversation its own memory, and restricted tools that could cross between chats. Every finding from an independent code audit was verified before it was fixed.
 
-The codebase ended up slightly smaller (120 → 108 source files) while gaining reliability logic, a sandbox, and tests (279 → 295). In the sandbox, the same scenarios got 16% faster.
+The codebase ended up slightly smaller (120 → 108 source files) while gaining reliability logic, a sandbox, and tests (279 → 295 at the time of the cleanup; 402 today). In the sandbox, the same scenarios got 16% faster.
 
 Later the core turn loop itself, now called **DEVCORE**, was refactored in six reviewed steps under 52 golden traces that had to match byte for byte after every step. It lost all of its `goto` jumps, and a live comparison with the earlier baseline showed the same behaviour and speed.
 
@@ -185,7 +193,7 @@ A code review of the memory pipeline found several ways to lose or corrupt saved
 - **Cleaner summaries:** the model's internal reasoning and previously retrieved memory pages are no longer summarized again as if they were new events.
 - **Atomic writes:** a corrupted snapshot no longer blocks a conversation, and each turn is capped at a fixed number of model requests.
 
-The application now has **390 automated tests**, including 52 golden traces of the turn loop. Integration tests that need live services are run separately.
+The application now has **402 automated tests** (26 November 2026), including 52 golden traces of the turn loop. They run without live services. Another 23 integration tests need the running model, speech services or a real Telegram account and are run separately.
 
 ## Observations and Limitations
 
@@ -195,7 +203,11 @@ This was one test under specific conditions, not a guarantee that every workload
 
 The size check before each request is a conservative estimate based on the amount of text sent, not an exact tokenizer count.
 
-**Access during testing:** The assistant was configured to interact with only one authorized user. Multi-chat behavior, separation of memories between people, and the full set of actions involving other users require separate testing.
+**Access during testing:** The assistant runs in owner-only mode: it talks to one authorized user.
+
+- **Covered by automated tests:** each chat has its own memory folder and history; image descriptions are cached per chat (a leak between chats through a shared cache was found and closed with a test); the chat list shows only the current chat; forwarding goes only to the owner.
+- **Not tested yet:** live use with more than one real person, and the full set of actions involving other users.
+- **Not implemented:** a memory per person that spans several chats.
 
 ## What I Learned
 
