@@ -59,14 +59,6 @@ The assistant can store information about people and previous conversations, the
 
 Each chat has its own conversation history and its own memory, so information from one conversation is not retrieved in another. When a memory search finds nothing, the assistant now says it does not remember instead of filling in the gaps; this is covered by tests. A separate memory per person, across several chats, is not implemented yet.
 
-## My Role
-
-I defined the project goals and the intended behavior of the assistant, including its conversational style, interaction boundaries, approach to memory, and voice features.
-
-I selected and evaluated models, configured local inference parameters, compared reasoning modes, and tested responses in real conversations. I also evaluated tool use and voice interaction.
-
-I used AI tools to investigate errors and make integration changes, then checked the results in the running system.
-
 ## Deployment Challenge
 
 The main technical constraint was running a large language model alongside local speech synthesis on a consumer GPU with **16 GB of VRAM**.
