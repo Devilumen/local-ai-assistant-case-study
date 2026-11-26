@@ -57,7 +57,7 @@ brief for the auditor → report with findings → check each against the code �
 
 The brief for the auditor is a separate document: the scope (which commits to read), what is already known, what to focus on, the answer format with a risk scale, and the restrictions (read only, no live run, no private data).
 
-## What It Produced: Five Reviews
+## What It Produced: Six Reviews
 
 | Review | Auditor's findings | Confirmed against the code | False |
 | --- | --- | --- | --- |
@@ -66,11 +66,14 @@ The brief for the auditor is a separate document: the scope (which commits to re
 | Regression after a large cleanup | 10 | 10 | 0 |
 | Move to a new model and engine: start, stop, voice | 14 | 14 | 0 |
 | Refactoring after the previous review | 12 | 12 | 0 |
-| **Total** | **56** | **55** | **0** |
+| Core refactor, every step reviewed separately | 11 | 11 | 0 |
+| **Total** | **67** | **66** | **0** |
 
-In the last two reviews the implementer ran its own review in parallel. Before the last one it found and fixed 6 problems itself; the auditor then found 12 more. In each of the two reviews there were three serious findings the implementer had missed.
+In the fourth and fifth reviews the implementer ran its own review in parallel. Before the last one it found and fixed 6 problems itself; the auditor then found 12 more. In each of the two reviews there were three serious findings the implementer had missed.
 
 Some examples.
+
+- **Regressions that the tests could not see.** The core turn loop was refactored step by step under 52 golden traces that record every model request and memory write. All traces stayed green, yet the auditor found two real regressions at the first new function boundary: other events could slip in between the end of a turn and its finalisation, and a turn's temporary objects outlived its signals. Both were fixed and turned into new traces, recorded on the previous accepted version so that they describe the old behaviour.
 
 - **"Checked, all fine" — and a hole.** The implementer introduced a rule: the API key goes only over HTTPS or to this same computer. In its self-review it wrote separately that the URL parsing had been checked and was fine. The auditor showed a URL like `http://evil.com?x=@localhost/`: the parser took it for localhost, and the key would have gone to a foreign server in clear text. A confident mistake, in exactly the place the author considered closed.
 - **A process that outlives its stop.** The voice model is started through a virtual-environment launcher, and the real process with the model is its child. A stop on timeout killed only the launcher, so the process with the model could stay alive and hold 3 GB of video memory. In the first review the implementer had also judged this place safe. Now the bridge gets the PID of the model process itself and does not load a second copy while the first one is alive.
@@ -94,7 +97,7 @@ Not every finding is fixed at once. The implementer ranks them by risk for what 
 ## What I Learned
 
 - With AI agents, quality is set not by the model but by the process around it: rules, checks, and who makes the decisions.
-- An independent auditor from another vendor pays off. Over five reviews — 55 confirmed findings out of 56, and not one false alarm.
+- An independent auditor from another vendor pays off. Over six reviews — 66 confirmed findings out of 67, and not one false alarm.
 - Self-review and independent review catch different things: the author sees well where the code does not do what was intended, the auditor sees where the intention can be bypassed. Both are needed, and the reading order matters: the auditor reads the author's report only after its own.
 - "Check every finding against the code" protects in both directions: from the auditor's mistakes and from unnecessary changes made on its advice.
 - The work log is not bureaucracy but the only way for the next agent or the next session not to start from zero.

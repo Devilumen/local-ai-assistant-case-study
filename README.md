@@ -1,4 +1,4 @@
-# Local AI Assistant: Behavior, Memory, and Voice
+# Local AI Assistant: Voice, Vision, Memory, and Behavior
 
 A case study of adapting and evaluating a local AI assistant with long-term memory, voice interaction, and Telegram tools on consumer hardware.
 
@@ -22,6 +22,9 @@ Within its configured permissions, the assistant can select and use tools for co
 - **Memory retrieval:** Search for relevant records about people, events, and previous conversations.
 - **Context preservation:** Summarize conversations and update working memory for future use.
 - **Voice interaction:** Convert prepared text into speech and send it through Telegram.
+- **Speech recognition:** Transcribe incoming voice notes and respond to what was said.
+- **Image understanding:** Answer questions about photos and screenshots, taking the caption and the conversation into account.
+- **Reminders:** Set reminders and deliver them on time, backed by a real timer rather than a promise in the text.
 - **Character consistency:** Follow system instructions and character settings to maintain a distinctive conversational style.
 - **Action selection:** Choose, based on available context, whether to respond, consult memory, use a tool, or end the current processing cycle.
 
@@ -54,7 +57,7 @@ A revised approach describes the character's conversational *moves* rather than 
 
 The assistant can store information about people and previous conversations, then search for related memories during interaction.
 
-A personal-memory component was used in an earlier version of the project. Its presence and operation in the current version still need to be verified. Reliably associating memories with individual users and testing that information is not mixed between people remain open concerns.
+Each chat has its own conversation history and its own memory, so information from one conversation is not retrieved in another. When a memory search finds nothing, the assistant now says it does not remember instead of filling in the gaps; this is covered by tests. A separate memory per person, across several chats, is not implemented yet.
 
 ## My Role
 
@@ -143,7 +146,7 @@ The end-to-end flow was tested in a real conversation: the assistant generated a
 
 See [Local Voice Interface](docs/voice.md) for the voice requirements, evaluation, and limitations.
 
-The project also includes work with speech-to-text and visual AI capabilities. Their current configurations require separate verification before performance results can be reported.
+Speech recognition and image understanding are part of everyday use. Voice notes were transcribed correctly in live conversations, and the assistant answers questions about photos and screenshots with the caption and the conversation in mind. Image descriptions run on the CPU next to the language model and are cached per chat. Their latency and accuracy have not been benchmarked separately, so no numbers are reported for them.
 
 ## Architecture Cleanup
 
@@ -151,11 +154,13 @@ After several rounds of experiments, the codebase still carried disabled feature
 
 The codebase ended up slightly smaller (120 → 108 source files) while gaining reliability logic, a sandbox, and tests (279 → 295). In the sandbox, the same scenarios got 16% faster.
 
+Later the core turn loop itself, now called **DEVCORE**, was refactored in six reviewed steps under 52 golden traces that had to match byte for byte after every step. It lost all of its `goto` jumps, and a live comparison with the earlier baseline showed the same behaviour and speed.
+
 See [Architecture cleanup and stabilization](docs/architecture.md) for the approach and the results.
 
 ## Working With Two AI Agents
 
-The code is written with AI coding agents: one implements and reviews its own work, a second one from another vendor audits it independently, and I make the decisions and approve every outward action. Every finding is checked against the code before it is fixed. Over five reviews the auditor reported 56 findings: 55 were confirmed, none were false alarms. In the last two reviews it found three serious issues each that the implementer had missed, including one the implementer had explicitly marked as safe.
+The code is written with AI coding agents: one implements and reviews its own work, a second one from another vendor audits it independently, and I make the decisions and approve every outward action. Every finding is checked against the code before it is fixed. Over six reviews the auditor reported 67 findings: 66 were confirmed, none were false alarms. In two of them it found three serious issues each that the implementer had missed, including one the implementer had explicitly marked as safe. During the core refactor it found two regressions that the golden traces had not caught.
 
 See [Two AI agents and an owner](docs/ai-assisted-workflow.md) for the roles, the rules and the examples.
 
@@ -180,7 +185,7 @@ A code review of the memory pipeline found several ways to lose or corrupt saved
 - **Cleaner summaries:** the model's internal reasoning and previously retrieved memory pages are no longer summarized again as if they were new events.
 - **Atomic writes:** a corrupted snapshot no longer blocks a conversation, and each turn is capped at a fixed number of model requests.
 
-The application now has **272 automated unit tests**. Integration tests that need live services are run separately.
+The application now has **390 automated tests**, including 52 golden traces of the turn loop. Integration tests that need live services are run separately.
 
 ## Observations and Limitations
 
@@ -209,6 +214,5 @@ The size check before each request is a conservative estimate based on the amoun
 
 - Fit the whole model on the GPU, then re-test speculative decoding and higher reasoning effort.
 - Evaluate the behavior-based character instructions against the current version.
-- Add scheduled reminders, so that the assistant's promises to remind are backed by a real timer.
 - Reduce latency from memory searches that run on almost every turn.
 - Develop a mechanism for modeling the assistant's emotional state, influencing its conversational style and reactions according to dialogue context.

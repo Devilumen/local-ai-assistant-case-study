@@ -57,6 +57,8 @@ The dead-code commit alone removed **3,555 lines**.
 | Sandbox turn time, 4 scenarios | 445 s | 374 s (−16%) |
 | Memory save | 119 s | 66 s on average |
 
+By 26 November the suite had grown to **390 tests**, 52 of them golden traces of the turn loop (see [Core refactor](#core-refactor-devcore) below).
+
 The application lost about 3,600 lines of dead or unused code. It gained roughly as many lines of reliability logic, isolation, a sandbox and tests, so the codebase ended up slightly smaller while doing more.
 
 ### Where the code grew
@@ -80,9 +82,23 @@ The rest came from smaller changes: owner-only forwarding with a note in memory,
 
 The checkpoint format, the size estimator and the memory-chunking rules went into separate small modules with their own tests. The orchestration itself stayed in the turn loop, because it needs the loop's state.
 
-### Next structural step
+## Core Refactor: DEVCORE
 
-The turn loop now mixes three jobs: the event loop itself, the lifecycle (shutdown and recovery), and the context policy (budget and memory saving). The plan is to split it along those lines. I postponed this on purpose: the loop is the riskiest part of the system, and I want the sandbox and the tests to cover enough of its behaviour first, so that the split can be checked against a baseline.
+The core turn loop, now called **DEVCORE**, was the riskiest part of the system: one block of about 330 lines with eight `goto` jumps and six early exits. I postponed changing it until it could be checked against a baseline, then refactored it in six reviewed steps with one rule: the observable behaviour must not change.
+
+- **Golden traces first.** 52 scenarios drive the real loop with a scripted model and fake tools. Each records every model request (prompt and tools by hash, the new messages), every tool call, the end-of-turn signals and the memory files. After every step the record had to match byte for byte. No trace was ever regenerated to make a step pass; traces added after a review were recorded on the previous accepted version.
+- **Small steps, each reviewed.** Move the loop into a method → into its own coroutine with named outcomes → replace `goto` with a step loop → move the decisions that need no waiting into small pure functions → one log line per turn. The independent auditor reviewed every step: 11 findings, all confirmed. Two of them were regressions the traces did not catch: other events could slip in between the end of a turn and its finalisation, and a turn's temporary objects outlived its signals. Both were fixed and pinned with new traces.
+- **The tests were tested too.** In the last three steps I broke the new code on purpose 14 times; every break turned at least one test red.
+- **Live comparison** with the earlier baseline run: median model request 5.2 s vs 4.7 s, 90th percentile 11.5 s vs 14.7 s, 18 of 18 turns ended normally, no errors.
+
+| | Before | After |
+| --- | --- | --- |
+| Turn body | ~330 lines, 8 `goto` | 168 lines: a step loop with 6 named outcomes, no `goto` |
+| Decisions that need no waiting | inside the loop | small pure functions with unit tests |
+| Logging | nothing per turn; an early error could log the user's message | one line per turn (outcome, chat, request steps, model requests, duration); errors log only the type and a cause from a fixed list |
+| Tests | 296 | 390, including 52 golden traces |
+
+The earlier plan was to split the loop into three modules: the event loop, the lifecycle and the context policy. I reshaped it in place first. In an asynchronous loop every new function boundary is a new place where the order of events can change, and the auditor found exactly such a regression at the first one. Splitting into modules stays for when a feature needs it.
 
 ## What I Learned
 
@@ -91,3 +107,4 @@ The turn loop now mixes three jobs: the event loop itself, the lifecycle (shutdo
 - Disabled features are not free: they still cost build time, configuration, prompt tokens and attention.
 - Deleting a library can reveal what quietly depended on it. That is a reason to delete carefully, not a reason to keep the library.
 - "Smaller" is not the goal by itself. The useful measure is what the code does per line, and whether its behaviour can be tested and repeated.
+- Record the behaviour before changing the code. Golden traces turned a risky refactor into a series of small, checkable steps, and an independent review still found what the traces could not see.
