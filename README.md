@@ -105,6 +105,10 @@ Speech synthesis still shares the same GPU. The hardest constraint turned out to
 
 See [125B on a single 16 GB GPU](docs/moe-on-16gb.md) for the memory budget, the measurements, what did not work, and the limitations.
 
+## Breaking the Latency Barrier
+
+From up to 1 min 45 s to a median of 9.5 s for the first reply — 10× faster on the same 16 GB GPU, with a 100× faster first token once the prompt cache was confirmed. The full path, including every hypothesis the measurements disproved: [Breaking the Latency Barrier](docs/speed.md).
+
 ## Reproducible Sandbox and Reasoning-Effort Evaluation
 
 To compare settings without touching real conversations, I used a sandbox. It runs the assistant's real turn loop against the local model, but with a simulated chat, synthetic scenarios and empty memory. Nothing goes to Telegram, and every request is measured.
