@@ -1,8 +1,10 @@
-# Local LLM Deployment and Evaluation
+# Intelligence Under Constraint: Engineering Local LLM Inference
+
+*The first local setup: a 27B model and speech synthesis on one 16 GB GPU, a 64K context, and what overflowed it.*
 
 This document expands on the language-model deployment described in the [main case study](../README.md). It records a local experiment, not a general performance benchmark.
 
-> **Update:** this 27B setup was later replaced on the same GPU by a 125B mixture-of-experts model: replies 2.9× faster, a 128K context, and no loss in blind-judged quality. See [125B on a single 16 GB GPU](moe-on-16gb.md).
+> **Update:** this 27B setup was later replaced on the same GPU by a 125B mixture-of-experts model: replies 2.9× faster, a 128K context, and no loss in blind-judged quality. See [Scaling Intelligence, Not Latency](moe-on-16gb.md).
 
 ## Goal
 

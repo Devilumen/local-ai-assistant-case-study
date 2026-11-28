@@ -1,4 +1,6 @@
-# Two AI Agents and an Owner: a Review Loop That Keeps AI-Written Code Honest
+# AI Writes. AI Audits. Human Decides.
+
+*Two AI coding agents and one owner: 6 independent audits, 67 findings, 66 confirmed against the code, 0 false alarms.*
 
 I develop my local AI assistant together with AI coding agents. The assistant runs entirely on a home computer: the language model, voice, speech recognition and memory. Almost all of the code in this project was written with AI involvement. The key question in this kind of work is not "can AI write the code" but "how do I know the code is right". This document describes the process I built and what it produced, in numbers. It complements the [main case study](../README.md).
 

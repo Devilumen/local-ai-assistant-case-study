@@ -1,4 +1,6 @@
-# Architecture Cleanup and Stabilization
+# Rebuilding Without Breaking: AI System Architecture and Refactoring
+
+*Cleaning up a local AI assistant: 3,500+ dead lines removed, 400+ tests that run without live services, and a rewritten core.*
 
 This document describes how I cleaned up my assistant's codebase after several rounds of experiments: I removed what it no longer needed and made the rest reliable enough to measure and extend. It complements the [main case study](../README.md). Source code is not published; the numbers come from the project's version history.
 

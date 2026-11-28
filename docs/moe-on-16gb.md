@@ -1,4 +1,6 @@
-# A 5× Larger Model, 3× Faster Replies: 125B on a Single 16 GB GPU
+# Scaling Intelligence, Not Latency: 125B MoE on a 16 GB GPU
+
+*A 5× larger model, 3× faster replies, 2× the context and no loss in blind-judged quality — on the same 16 GB GPU.*
 
 ## Result
 

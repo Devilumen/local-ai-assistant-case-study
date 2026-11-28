@@ -1,4 +1,6 @@
-# Sandbox Evaluation: Latency, Reasoning Effort, and Blind Judging
+# The Cost of Thinking: Engineering Reproducible LLM Evaluations
+
+*Four reasoning levels on the same scenarios, from 38 s to 153 s per turn; blind LLM judges calibrated against a human; and why "low" won.*
 
 This document expands on the sandbox evaluation in the [main case study](../README.md). It records local experiments on one machine. It is not a general benchmark.
 

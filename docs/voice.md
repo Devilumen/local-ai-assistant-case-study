@@ -1,4 +1,6 @@
-# Local Voice Interface for an AI Assistant
+# Humanizing the Machine: Engineering Expressive AI Speech
+
+*Local speech synthesis tuned by ear: 6 listening rounds, about 80 variants, and 2.3 GB of VRAM next to a 125B model.*
 
 A case study of selecting and integrating local speech synthesis for an AI assistant that communicates through Telegram.
 

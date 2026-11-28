@@ -46,7 +46,7 @@ from another model family, calibrated against my own picks:
 - off → low brought the biggest quality gain: fewer invented memories and fewer unnecessary tool calls;
 - extra-high was four times slower and did not score best.
 
-**Low** became the default. Method and full results: [Sandbox evaluation](evaluation.md).
+**Low** became the default. Method and full results: [The Cost of Thinking](evaluation.md).
 
 **Did not work:** MTP (speculative decoding) while part of the layers stayed on the CPU: 12.9 vs 13.8 tok/s.
 
@@ -87,7 +87,7 @@ The cache had worked all along. The metric read the wrong field of the response.
   really turns it off: **3.2 → 0.7 s** on a short request.
 - Video used to be described with one request per frame. Now all frames go in one request, with a per-frame fallback
   when the answer is off-format: **108 → 46 s** on the test video. An endless retry on an empty answer went away too.
-- Voice messages: 12–52 → 1–3 s after the synthesizer switch, details in [Humanizing the Voice](voice.md).
+- Voice messages: 12–52 → 1–3 s after the synthesizer switch, details in [Humanizing the Machine](voice.md).
 
 ## What Did Not Work — and Why That Counts Too
 
@@ -103,14 +103,14 @@ The cache had worked all along. The metric read the wrong field of the response.
 ## How It Was Measured
 
 - **Sandbox:** the real turn loop, synthetic scenarios, empty memory, nothing reaches people. The same scenarios
-  before and after — see [Sandbox evaluation](evaluation.md).
+  before and after — see [The Cost of Thinking](evaluation.md).
 - **Live metrics without text:** one line per request (duration, tokens, cache, tool names) and one line per turn
   (stages). A separate script summarizes a run.
 - **Thresholds set in advance:** "no worse than before" is defined by numbers approved before the test, not fitted
   afterwards.
 - **Synthetic probes:** every hypothesis gets a small run on the real model before any code changes.
 - **Two agents:** one writes and checks the code, a second one from another vendor reviews it independently — see
-  [AI-assisted workflow](ai-assisted-workflow.md).
+  [AI Writes. AI Audits. Human Decides.](ai-assisted-workflow.md).
 
 ## What's Next
 
@@ -119,6 +119,6 @@ The cache had worked all along. The metric read the wrong field of the response.
 - The forced memory search before a reply — the most visible remaining extra step.
 - Voice calls: a different latency budget, where a second of silence is more noticeable than in a chat.
 
-**More from this project:** [Architecture](architecture.md) · [LLM deployment](llm.md) · [125B on 16 GB](moe-on-16gb.md) ·
-[Sandbox evaluation](evaluation.md) · [Voice](voice.md) · [Staying in Character](prompt-injection-evaluation.md) ·
-[AI-assisted workflow](ai-assisted-workflow.md) · [README](../README.md)
+**More from this project:** [Rebuilding Without Breaking](architecture.md) · [Intelligence Under Constraint](llm.md) · [Scaling Intelligence, Not Latency](moe-on-16gb.md) ·
+[The Cost of Thinking](evaluation.md) · [Humanizing the Machine](voice.md) · [Staying in Character](prompt-injection-evaluation.md) ·
+[AI Writes. AI Audits. Human Decides.](ai-assisted-workflow.md) · [README](../README.md)

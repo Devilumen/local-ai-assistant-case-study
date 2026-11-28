@@ -84,7 +84,7 @@ A quantized **27B-parameter language model** was configured for local inference.
 
 In one synthetic test, the model processed approximately **60,000 input tokens** while local speech synthesis was also running.
 
-See [LLM deployment and evaluation](docs/llm.md) for the test configuration and limitations.
+See [Intelligence Under Constraint](docs/llm.md) for the test configuration and limitations.
 
 ## Upgrade: a 5× Larger Model, 3× Faster Replies
 
@@ -103,7 +103,7 @@ The 27B setup above was later replaced, on the same 16 GB GPU, by a **125B mixtu
 
 Speech synthesis still shares the same GPU. The hardest constraint turned out to be system RAM: the fastest configuration left no room for voice and pushed the system into swap, so the configuration in use trades 26% of generation speed for 2.5× faster voice.
 
-See [125B on a single 16 GB GPU](docs/moe-on-16gb.md) for the memory budget, the measurements, what did not work, and the limitations.
+See [Scaling Intelligence, Not Latency](docs/moe-on-16gb.md) for the memory budget, the measurements, what did not work, and the limitations.
 
 ## Breaking the Latency Barrier
 
@@ -128,7 +128,7 @@ The biggest quality gain came from the first step, off to low: fewer invented me
 
 These are single runs per level on a small scenario set. The judges agreed with my own picks in 3 and 2 of 5 calibration pairs, so on character questions human judgment stays decisive.
 
-See [Sandbox evaluation](docs/evaluation.md) for the method and the full results.
+See [The Cost of Thinking](docs/evaluation.md) for the method and the full results.
 
 **Character and instruction following.** See [Staying in Character | Staying on Task](docs/prompt-injection-evaluation.md) for two checks: how the assistant handles pressure and whether instructions in search results can steer it away from the user's request.
 
@@ -140,7 +140,7 @@ The end-to-end flow was tested in a real conversation: the assistant generated a
 
 **Update: humanizing the voice.** Over 6 listening rounds (~80 variants, every decision by ear), the voice got a natural pace and smoother intonation, confirmed name stress, 9 approved vocal reactions, and no more cut-off endings or hiss at the start. It uses about 2.3 GB of VRAM next to a 125B language model on the same 16 GB GPU; the previous synthesizer took almost the whole card.
 
-See [Local Voice Interface](docs/voice.md) for the voice requirements, evaluation, and limitations.
+See [Humanizing the Machine](docs/voice.md) for the voice requirements, evaluation, and limitations.
 
 Speech recognition and image understanding are part of everyday use. Voice notes were transcribed correctly in live conversations, and the assistant answers questions about photos and screenshots with the caption and the conversation in mind. Image descriptions run on the CPU next to the language model and are cached per chat. Measured on 26 November 2026, on the same machine, next to the 125B model:
 
@@ -160,13 +160,13 @@ The codebase ended up slightly smaller (120 → 108 source files) while gaining 
 
 Later the core turn loop itself, now called **DEVCORE**, was refactored in six reviewed steps under 52 golden traces that had to match byte for byte after every step. It lost all of its `goto` jumps, and a live comparison with the earlier baseline showed the same behaviour and speed.
 
-See [Architecture cleanup and stabilization](docs/architecture.md) for the approach and the results.
+See [Rebuilding Without Breaking](docs/architecture.md) for the approach and the results.
 
 ## Working With Two AI Agents
 
 The code is written with AI coding agents: one implements and reviews its own work, a second one from another vendor audits it independently, and I make the decisions and approve every outward action. Every finding is checked against the code before it is fixed. Over six reviews the auditor reported 67 findings: 66 were confirmed, none were false alarms. In two of them it found three serious issues each that the implementer had missed, including one the implementer had explicitly marked as safe. During the core refactor it found two regressions that the golden traces had not caught.
 
-See [Two AI agents and an owner](docs/ai-assisted-workflow.md) for the roles, the rules and the examples.
+See [AI Writes. AI Audits. Human Decides.](docs/ai-assisted-workflow.md) for the roles, the rules and the examples.
 
 ## Reliability Case: Context Overflow
 
